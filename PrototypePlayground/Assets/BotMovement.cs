@@ -6,10 +6,12 @@ using System;
 public class BotMovement : MonoBehaviour
 {
     Animator anim;
-    float acceleration = 1.0f;
-    float deceleration = 1.0f;
+    [SerializeField]float acceleration = 2.5f;
+    [SerializeField]float deceleration = 3.0f;
     float maxWalkSpeed = 0.5f;
     float maxRunSpeed = 2.0f;
+    [SerializeField] float horzAxis;
+    [SerializeField] float vertAxis;
     float velocityX;
     float velocityZ;
 
@@ -33,27 +35,55 @@ public class BotMovement : MonoBehaviour
         bool isRight = Input.GetKey("d");
         bool isLeft = Input.GetKey("a");
         */
-        float horzAxis = Input.GetAxis("Horizontal");
-        float vertAxis = Input.GetAxis("Vertical");
+        horzAxis = Input.GetAxis("Horizontal");
+        vertAxis = Input.GetAxis("Vertical");
         bool isRunning = Input.GetKey("left shift");
         
+        if(horzAxis != 0 && !Input.GetKey("a") && !Input.GetKey("d")){horzAxis = 0;}
         
         float maxVelocity = (isRunning) ? maxRunSpeed : maxWalkSpeed;
         
         //player is holding key, continue movement
         
-        if(/*isWalking*/vertAxis > 0){
-            velocityZ += Time.deltaTime * acceleration;
-            if(!isLegalVelocity(velocityZ, maxVelocity)){velocityZ = maxVelocity;}
+        if(/*isWalking*/vertAxis != 0){
+            velocityZ += (Time.deltaTime * acceleration) * vertAxis;
+            if(!isLegalVelocity(velocityZ, maxVelocity)){
+                if(isRunning){velocityZ = maxVelocity;}
+                else{velocityZ -= Time.deltaTime * deceleration;}}
+        } else { //vertAxis == 0 ; no vertical input
+            velocityZ = resetVelocity(velocityZ);
         }
+
+
+        if(horzAxis != 0.0f){
+            velocityX += (Time.deltaTime * acceleration) * horzAxis;
+            if(!isLegalVelocity(velocityX, maxVelocity)){
+                if(isRunning){velocityX = (velocityX > 0) ? maxVelocity : -maxVelocity;}
+                else{
+                    velocityX = (velocityX > 0) ? velocityX - Time.deltaTime * deceleration : velocityX + Time.deltaTime * deceleration;
+                    //velocityX -= Time.deltaTime * deceleration;}
+                    //velocityX = resetVelocity(velocityX);
+                }   
+            }
+        } else { //horzAxis == 0 ; no horizontal input 
+            velocityX = resetVelocity(velocityX);
+        }
+        /*
         if(horzAxis > 0.0f){
             velocityX += Time.deltaTime * acceleration;
-            if(!isLegalVelocity(velocityX, maxVelocity)){velocityX = maxVelocity;}
+            if(!isLegalVelocity(velocityX, maxVelocity)){
+                if(isRunning){velocityX = maxVelocity;}
+                else{velocityX -= Time.deltaTime * deceleration;}
+            }
         }
         if(horzAxis < 0.0f){
             velocityX -= Time.deltaTime * acceleration;
-            if(!isLegalVelocity(velocityX, maxVelocity)){velocityX = -maxVelocity;}
+            if(!isLegalVelocity(velocityX, maxVelocity)){
+                if(isRunning){velocityX = -maxVelocity;}
+                else{velocityX += Time.deltaTime * deceleration;}
+            }
         }
+        
 
         //player has let go of key, ajdust speeds and check for valid values
         if(vertAxis == 0 && velocityZ > 0.0f){
@@ -70,13 +100,23 @@ public class BotMovement : MonoBehaviour
         if(!isLeft && velocityX < 0.0f){
             velocityX = (Time.deltaTime * deceleration > -velocityX) ? 0 : velocityX + Time.deltaTime * deceleration;
         } */
+
+
         anim.SetFloat(velocityXHash, velocityX);
         anim.SetFloat(velocityZHash, velocityZ);
+        Debug.Log("Horz: " + horzAxis + "\nVert: " + vertAxis);
     }
 
     bool isLegalVelocity(float velocity, float maxVelocity){
         return (Math.Abs(velocity) < maxVelocity);
     }
 
-    
+    float resetVelocity(float velocity){
+        float dummyVal = 0;
+        bool isPositive = (velocity > 0);
+        if(isPositive) {dummyVal = (Time.deltaTime * deceleration > velocity) ? 0 : velocity - Time.deltaTime * deceleration;}
+        else {dummyVal = (Time.deltaTime * deceleration > -velocity) ? 0 : velocity + Time.deltaTime * deceleration;}
+        return dummyVal;
+    }
+
 }
