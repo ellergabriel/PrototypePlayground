@@ -6,14 +6,19 @@ using System;
 public class BotMovement : MonoBehaviour
 {
     Animator anim;
-    [SerializeField]float acceleration = 2.5f;
-    [SerializeField]float deceleration = 3.0f;
+    [SerializeField]float acceleration = 1.5f;
+    [SerializeField]float deceleration = 2.0f;
     float maxWalkSpeed = 0.5f;
     float maxRunSpeed = 2.0f;
     [SerializeField] float horzAxis;
     [SerializeField] float vertAxis;
     float velocityX;
     float velocityZ;
+
+    Rigidbody rb;
+
+    [SerializeField] Transform groundCheck;
+    [SerializeField] LayerMask ground;
 
     int velocityXHash, velocityZHash;
     //string isWalkingString = "isWalking";
@@ -25,8 +30,8 @@ public class BotMovement : MonoBehaviour
         velocityZHash = Animator.StringToHash("velocityZ");
         velocityX = 0.0f;
         velocityZ = 0.0f;
+        rb = GetComponent<Rigidbody>();
     }
-
     // Update is called once per frame
     void Update()
     {
@@ -41,6 +46,7 @@ public class BotMovement : MonoBehaviour
         
         if(horzAxis != 0 && !Input.GetKey("a") && !Input.GetKey("d")){horzAxis = 0;}
         
+
         float maxVelocity = (isRunning) ? maxRunSpeed : maxWalkSpeed;
         
         //player is holding key, continue movement
@@ -104,6 +110,10 @@ public class BotMovement : MonoBehaviour
 
         anim.SetFloat(velocityXHash, velocityX);
         anim.SetFloat(velocityZHash, velocityZ);
+        Vector3 temp = new Vector3(velocityX, 0, velocityZ);
+        rb.MovePosition(rb.transform.position + temp);
+        //rb.velocity = new Vector3(velocityX, 0, velocityZ);
+        
         Debug.Log("Horz: " + horzAxis + "\nVert: " + vertAxis);
     }
 
