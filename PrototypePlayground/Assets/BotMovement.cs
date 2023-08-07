@@ -55,7 +55,7 @@ public class BotMovement : MonoBehaviour
             velocityZ += (Time.deltaTime * acceleration) * vertAxis;
             if(!isLegalVelocity(velocityZ, maxVelocity)){
                 if(isRunning){velocityZ = maxVelocity;}
-                else{velocityZ -= Time.deltaTime * deceleration;}}
+                else{velocityZ = (velocityZ > 0) ? velocityZ - Time.deltaTime * deceleration : velocityZ + Time.deltaTime * deceleration;;}}
         } else { //vertAxis == 0 ; no vertical input
             velocityZ = resetVelocity(velocityZ);
         }
@@ -125,7 +125,7 @@ public class BotMovement : MonoBehaviour
         float dummyVal = 0;
         bool isPositive = (velocity > 0);
         if(isPositive) {dummyVal = (Time.deltaTime * deceleration > velocity) ? 0 : velocity - Time.deltaTime * deceleration;}
-        else {dummyVal = (Time.deltaTime * deceleration > -velocity) ? 0 : velocity + Time.deltaTime * deceleration;}
+        else {dummyVal = (Time.deltaTime * deceleration > Math.Abs(-velocity) ) ? 0 : velocity + Time.deltaTime * deceleration;}
         return dummyVal;
     }
 
